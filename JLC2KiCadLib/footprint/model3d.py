@@ -10,6 +10,7 @@ wrl_header = """#VRML V2.0 utf8
 #for more info see https://github.com/TousstNicolas/JLC2KICAD_lib
 """
 
+user_agent = {"User-Agent" : "curl/8.7.1"}
 
 def mil2mm(data):
     return float(data) / 3.937
@@ -29,10 +30,9 @@ def get_StepModel(
     # `qAxj6KHrDKw4blvCG8QJPs7Y` is a constant in
     # https://modules.lceda.cn/smt-gl-engine/0.8.22.6032922c/smt-gl-engine.js
     # and points to the bucket containing the step files.
-    headers = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
     response = requests.get(
         f"https://modules.easyeda.com/qAxj6KHrDKw4blvCG8QJPs7Y/{component_uuid}",
-        headers=headers
+        headers=user_agent
     )
 
     if response.status_code != requests.codes.ok:
@@ -91,10 +91,9 @@ def get_WrlModel(
     rotation,
 ):
     logging.info("Creating WRL model ...")
-    headers = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
     response = requests.get(
         f"https://easyeda.com/analyzer/api/3dmodel/{component_uuid}",
-        headers=headers
+        headers=user_agent
     )
     if response.status_code == requests.codes.ok:
         text = response.content.decode()
