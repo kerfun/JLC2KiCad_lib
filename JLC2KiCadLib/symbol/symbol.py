@@ -5,6 +5,7 @@ import re
 
 import requests
 
+from .. import helper
 from .symbol_handlers import handlers
 
 template_lib_header = """\
@@ -48,7 +49,10 @@ def create_symbol(
     kicad_symbol = kicad_symbol()
     ComponentName = ""
     for component_uuid in symbol_component_uuid:
-        response = requests.get(f"https://easyeda.com/api/components/{component_uuid}",headers=user_agent)
+        response = requests.get(
+            f"https://easyeda.com/api/components/{component_uuid}",
+            headers={"User-Agent": helper.get_user_agent()},
+        )
         if response.status_code == requests.codes.ok:
             data = json.loads(response.content.decode())
         else:

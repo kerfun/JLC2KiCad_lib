@@ -18,7 +18,7 @@ def add_component(component_id, args):
     data = json.loads(
         requests.get(
             f"https://easyeda.com/api/products/{component_id}/svgs",
-            headers={"User-Agent" : "curl/8.7.1"}
+            headers={"User-Agent": helper.get_user_agent()},
         ).content.decode()
     )
 

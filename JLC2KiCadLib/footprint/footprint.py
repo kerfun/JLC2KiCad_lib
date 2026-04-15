@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import requests
 from KicadModTree import Footprint, KicadFileHandler, Pad, Text, Translation
 
+from .. import helper
 from .footprint_handlers import handlers, mil2mm
 
 
@@ -141,8 +142,8 @@ def get_footprint_info(footprint_component_uuid):
     # fetch the component data from easyeda library
     response = requests.get(
         f"https://easyeda.com/api/components/{footprint_component_uuid}",
-        headers={"User-Agent" : "curl/8.7.1"}
-        )
+        headers={"User-Agent": helper.get_user_agent()},
+    )
 
     if response.status_code == requests.codes.ok:
         data = json.loads(response.content.decode())
