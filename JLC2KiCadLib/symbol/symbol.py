@@ -74,16 +74,19 @@ def create_symbol(
             .replace('"', "{dblquote}")
         )
 
+        component_para = data["result"]["dataStr"]["head"]["c_para"]
+        manufacturer_part = component_para.get("Manufacturer Part", "")
+        component_value = component_para.get("Value", "")
+
         component_types_values = []
         for value_type in supported_value_types:
-            component_para = data["result"]["dataStr"]["head"]["c_para"]
             value_key = value_type
             if value_type not in component_para.values():
                 # Check if we can determine the value type from the prefix
                 if value_type != designator_to_value_type.get(component_para.get('pre',None), None):
                     continue
                 value_key = 'Value'
-                
+
             component_types_values.append(
                 (
                     value_type,
@@ -127,6 +130,9 @@ def create_symbol(
                 )
         kicad_symbol.drawing += """\n    )"""
 
+    keyword_value = component_types_values[0][1] if component_types_values else component_value
+    ki_keywords = " ".join(filter(None, [component_id, manufacturer_part, keyword_value]))
+
     # ruff: disable [E501]
     template_lib_component = f"""\
   (symbol "{ComponentName}" {kicad_symbol.pinNamesHide} {kicad_symbol.pinNumbersHide} (in_bom yes) (on_board yes)
@@ -136,7 +142,7 @@ def create_symbol(
     (property "Value" "{component_types_values[0][1] if component_types_values else ComponentName}" (id 1) (at 0 -2.54 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Manufacturer #" "{ComponentName}" (id 1) (at 0 -2.54 0)
+    (property "Manufacturer #" "{manufacturer_part or ComponentName}" (id 1) (at 0 -2.54 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Footprint" "{footprint_name}" (id 2) (at 0 -10.16 0)
@@ -145,11 +151,16 @@ def create_symbol(
     (property "Datasheet" "{datasheet_link}" (id 3) (at -2.286 0.127 0)
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
-    (property "ki_keywords" "{component_id}" (id 4) (at 0 0 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "ki_keywords" "{ComponentName}" (id 4) (at 0 0 0)
-      (effects (font (size 1.27 1.27)) hide)
+    (property "ki_keywords" "{ki_keywords}"
+      (at 0 0 0)
+      (show_name no)
+      (do_not_autoplace no)
+      (hide yes)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
     )
     (property "LCSC" "{component_id}" (id 5) (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
