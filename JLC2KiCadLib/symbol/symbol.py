@@ -91,6 +91,9 @@ def create_symbol(
                     continue
                 value_key = 'Value'
 
+            if value_key not in component_para:
+                continue
+
             component_types_values.append(
                 (
                     value_type,
