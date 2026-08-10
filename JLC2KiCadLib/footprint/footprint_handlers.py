@@ -50,6 +50,11 @@ layer_correspondance = {
     "101": "Cmts.User",  # EasyEDA "Component marking layer"
 }
 
+# EasyEDA documentation layers with no real KiCad equivalent. They hold
+# component outlines / pad soldering shapes / markings that just duplicate the
+# real pads and silkscreen, so we drop them instead of dumping onto Cmts.User.
+IGNORED_LAYERS = {"99", "100", "101"}
+
 
 def mil2mm(data):
     return float(data) / 3.937
@@ -67,6 +72,9 @@ def h_TRACK(data, kicad_mod, footprint_info):
         4 : id
     ]
     """
+
+    if data[1] in IGNORED_LAYERS:
+        return
 
     width = mil2mm(data[0])
 
@@ -230,6 +238,9 @@ def h_ARC(data, kicad_mod, footprint_info):
     ]
     """
 
+    if data[1] in IGNORED_LAYERS:
+        return
+
     width = data[0]
     layer = layer_correspondance[data[1]]
     svg_path = data[3]
@@ -307,10 +318,9 @@ def h_ARC(data, kicad_mod, footprint_info):
 def h_CIRCLE(data, kicad_mod, footprint_info):
     # append a Circle to the footprint
 
-    if (
-        data[4] == "100"
-    ):  # they want to draw a circle on pads, we don't want that. This is an empirical
-        # deduction, no idea if this is correct, but it seems to work on my tests
+    if data[4] in IGNORED_LAYERS:
+        # EasyEDA doc layers (pin soldering / marking / shape) drawn on top of
+        # pads; we don't want those on Cmts.User.
         return ()
 
     data[0] = mil2mm(data[0])
@@ -438,6 +448,9 @@ def svg_arc_to_points(x1, y1, rx, ry, rotation, large_arc_flag, sweep_flag, x2, 
 
 
 def h_SOLIDREGION(data, kicad_mod, footprint_info):
+    if data[3] != "npth" and data[0] in IGNORED_LAYERS:
+        return
+
     layer = "Edge.Cuts" if data[3] == "npth" else layer_correspondance[data[0]]
 
     path = data[2]
@@ -548,6 +561,9 @@ def h_VIA(data, kicad_mod, footprint_info):
 
 
 def h_RECT(data, kicad_mod, footprint_info):
+    if data[4] in IGNORED_LAYERS:
+        return
+
     Xstart = float(mil2mm(data[0]))
     Ystart = float(mil2mm(data[1]))
     Xdelta = float(mil2mm(data[2]))
